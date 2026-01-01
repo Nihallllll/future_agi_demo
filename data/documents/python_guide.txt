@@ -1,0 +1,45 @@
+Python Programming Guide
+
+Python is a high-level, interpreted programming language known for its simplicity and readability. Created by Guido van Rossum and first released in 1991, Python has become one of the most popular programming languages.
+
+Key Features:
+- Easy to learn and read
+- Interpreted language
+- Dynamically typed
+- Object-oriented
+- Extensive standard library
+
+Python Syntax Basics
+Python uses indentation to define code blocks. Variables don't need to be declared with a specific type.
+
+Example:
+def greet(name):
+    return f"Hello, {name}!"
+
+Data Types
+Python supports various data types:
+- int: Integer numbers
+- float: Decimal numbers
+- str: Text strings
+- list: Ordered collections
+- dict: Key-value pairs
+- tuple: Immutable sequences
+- set: Unordered unique elements
+
+Popular Python Libraries:
+- NumPy: Numerical computing
+- Pandas: Data manipulation
+- Matplotlib: Data visualization
+- TensorFlow: Machine learning
+- Django: Web development
+- Flask: Lightweight web framework
+
+Python is widely used in:
+- Web development
+- Data science and analytics
+- Artificial intelligence
+- Scientific computing
+- Automation and scripting
+- Game development
+
+The simplicity and versatility of Python make it an excellent choice for both beginners and experienced programmers.

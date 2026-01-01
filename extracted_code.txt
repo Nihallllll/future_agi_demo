@@ -1,0 +1,4847 @@
+All Code Files - Gemini RAG Project
+This file contains ALL the code you need to run the project. Each section is a separate file.
+File 1: requirements.txt
+File 2: .env.example
+# Google Gemini
+# Google Gemini
+google-generativeai>=0.3.0
+google-generativeai>=0.3.0
+# Future AGI SDKs
+# Future AGI SDKs
+traceai-google-genai>=0.1.0
+traceai-google-genai>=0.1.0
+fi-instrumentation>=0.1.0
+fi-instrumentation>=0.1.0
+fi-evaluation>=0.1.0
+fi-evaluation>=0.1.0
+# Vector Database
+# Vector Database
+chromadb>=0.4.22
+chromadb>=0.4.22
+# Document Processing
+# Document Processing
+pypdf>=4.0.0
+pypdf>=4.0.0
+python-docx>=1.1.0
+python-docx>=1.1.0
+# Token Counting
+# Token Counting
+tiktoken>=0.5.2
+tiktoken>=0.5.2
+# Web Interface
+# Web Interface
+gradio>=4.16.0
+gradio>=4.16.0
+# Utilities
+# Utilities
+python-dotenv>=1.0.0
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+pydantic-settings>=2.1.0
+bash
+
+
+--- PAGE 1 END ---
+
+File 3: config.py
+# Future AGI Credentials
+# Future AGI Credentials
+# Get these from: https://app.futureagi.com/settings/api-keys
+# Get these from: https://app.futureagi.com/settings/api-keys
+FI_API_KEY
+FI_API_KEY=your_future_agi_api_key_here
+your_future_agi_api_key_here
+FI_SECRET_KEY
+FI_SECRET_KEY=your_future_agi_secret_key_here
+your_future_agi_secret_key_here
+# Google Gemini API Key
+# Google Gemini API Key
+# Get from: https://aistudio.google.com/app/apikey
+# Get from: https://aistudio.google.com/app/apikey
+GOOGLE_API_KEY
+GOOGLE_API_KEY=your_google_api_key_here
+your_google_api_key_here
+# Project Configuration
+# Project Configuration
+PROJECT_NAME
+PROJECT_NAME=gemini-document-qa
+gemini-document-qa
+ENVIRONMENT
+ENVIRONMENT=development
+development
+python
+
+
+--- PAGE 2 END ---
+
+"""
+"""
+Configuration Management for Gemini RAG System
+Configuration Management for Gemini RAG System
+"""
+"""
+import
+import os
+ os
+from
+from pathlib 
+ pathlib import
+import Path
+ Path
+from
+from pydantic_settings 
+ pydantic_settings import
+import BaseSettings
+ BaseSettings
+from
+from pydantic 
+ pydantic import
+import Field
+ Field
+from
+from dotenv 
+ dotenv import
+import load_dotenv
+ load_dotenv
+# Load environment variables
+# Load environment variables
+load_dotenv
+load_dotenv()
+class
+class Settings
+Settings(BaseSettings
+BaseSettings):
+    
+    """Application Settings with validation"""
+"""Application Settings with validation"""
+    
+    
+    
+    # API Keys
+# API Keys
+    fi_api_key
+    fi_api_key: str
+str = Field
+ Field(..., env
+ env='FI_API_KEY'
+'FI_API_KEY')
+    fi_secret_key
+    fi_secret_key: str
+str = Field
+ Field(..., env
+ env='FI_SECRET_KEY'
+'FI_SECRET_KEY')
+    google_api_key
+    google_api_key: str
+str = Field
+ Field(..., env
+ env='GOOGLE_API_KEY'
+'GOOGLE_API_KEY')
+    
+    
+    
+    # Project Configuration
+# Project Configuration
+    project_name
+    project_name: str
+str = Field
+ Field(default
+default='gemini-document-qa'
+'gemini-document-qa', env
+ env='PROJECT_NAME'
+'PROJECT_NAME')
+    environment
+    environment: str
+str = Field
+ Field(default
+default='development'
+'development', env
+ env='ENVIRONMENT'
+'ENVIRONMENT')
+    
+    
+    
+    # Model Configuration
+# Model Configuration
+    llm_model
+    llm_model: str
+str = "gemini-2.0-flash-exp"
+"gemini-2.0-flash-exp"    # Free tier model
+# Free tier model
+    embedding_model
+    embedding_model: str
+str = "models/text-embedding-004"
+"models/text-embedding-004"    # Gemini embeddings
+# Gemini embeddings
+    eval_model
+    eval_model: str
+str = "turing_flash"
+"turing_flash"    # Future AGI evaluation model
+# Future AGI evaluation model
+    
+    
+    
+    # RAG Configuration
+# RAG Configuration
+    chunk_size
+    chunk_size: int
+int = 500
+500    # Tokens per chunk
+# Tokens per chunk
+    chunk_overlap
+    chunk_overlap: int
+int = 100
+100    # Overlap between chunks
+# Overlap between chunks
+    top_k_retrieval
+    top_k_retrieval: int
+int = 3    # Number of chunks to retrieve
+# Number of chunks to retrieve
+    
+    
+    
+    # Generation settings
+# Generation settings
+    temperature
+    temperature: float
+float = 0.7
+0.7    # Creativity (0=deterministic, 1=creative)
+# Creativity (0=deterministic, 1=creative)
+    max_output_tokens
+    max_output_tokens: int
+int = 1000
+1000    # Max tokens in response
+# Max tokens in response
+    
+    
+    
+    # Evaluation Configuration
+# Evaluation Configuration
+    enable_evaluation
+    enable_evaluation: bool
+bool = True
+True
+    eval_templates
+    eval_templates: list
+list = [
+        
+        "hallucination"
+"hallucination",
+        
+        "relevance"
+"relevance",
+        
+        "toxicity"
+"toxicity",
+
+
+--- PAGE 3 END ---
+
+File 4: src/__init__.py
+        
+        "tone"
+"tone"
+    
+    ]
+    
+    
+    
+    # Paths
+# Paths
+    base_dir
+    base_dir: Path 
+ Path = Path
+ Path(__file__
+__file__).parent
+parent
+    data_dir
+    data_dir: Path 
+ Path = base_dir 
+ base_dir / "data"
+"data"
+    documents_dir
+    documents_dir: Path 
+ Path = data_dir 
+ data_dir / "documents"
+"documents"
+    chroma_dir
+    chroma_dir: Path 
+ Path = base_dir 
+ base_dir / "chroma_db"
+"chroma_db"
+    
+    
+    
+    class
+class Config
+Config:
+        env_file 
+        env_file = ".env"
+".env"
+        env_file_encoding 
+        env_file_encoding = "utf-8"
+"utf-8"
+# Initialize settings
+# Initialize settings
+try
+try:
+    settings 
+    settings = Settings
+ Settings()
+    
+    
+    
+    # Create necessary directories
+# Create necessary directories
+    settings
+    settings.documents_dir
+documents_dir.mkdir
+mkdir(parents
+parents=True
+True, exist_ok
+ exist_ok=True
+True)
+    settings
+    settings.chroma_dir
+chroma_dir.mkdir
+mkdir(parents
+parents=True
+True, exist_ok
+ exist_ok=True
+True)
+    
+    
+    
+    # Set Google API key globally
+# Set Google API key globally
+    os
+    os.environ
+environ["GOOGLE_API_KEY"
+"GOOGLE_API_KEY"] = settings
+ settings.google_api_key
+google_api_key
+    
+    
+    
+    print
+print("✅ Configuration loaded successfully"
+"✅ Configuration loaded successfully")
+    
+    print
+print(f"📁 Project: 
+f"📁 Project: {settings
+settings.project_name
+project_name}")
+    
+    print
+print(f"🌍 Environment: 
+f"🌍 Environment: {settings
+settings.environment
+environment}")
+    
+    print
+print(f"🤖 LLM Model: 
+f"🤖 LLM Model: {settings
+settings.llm_model
+llm_model}")
+    
+    
+except
+except Exception 
+ Exception as
+as e e:
+    
+    print
+print(f"❌ Configuration Error: 
+f"❌ Configuration Error: {str
+str(e)}")
+    
+    print
+print("Please ensure .env file exists with required variables"
+"Please ensure .env file exists with required variables")
+    
+    print
+print("Copy .env.example to .env and fill in your API keys"
+"Copy .env.example to .env and fill in your API keys")
+    
+    raise
+raise
+# Export settings
+# Export settings
+__all__ 
+__all__ = ['settings'
+'settings']
+python
+
+
+--- PAGE 4 END ---
+
+File 5: src/document_processor.py
+"""
+"""
+Gemini RAG System - Source Package
+Gemini RAG System - Source Package
+"""
+"""
+__version__ 
+__version__ = "1.0.0"
+"1.0.0"
+__author__ 
+__author__ = "Gemini RAG Team"
+"Gemini RAG Team"
+from
+from .document_processor 
+document_processor import
+import DocumentProcessor
+ DocumentProcessor
+from
+from .vector_store 
+vector_store import
+import VectorStore
+ VectorStore
+from
+from .rag_engine 
+rag_engine import
+import RAGEngine
+ RAGEngine
+from
+from .evaluator 
+evaluator import
+import QualityEvaluator
+ QualityEvaluator
+from
+from .ui 
+ui import
+import create_interface
+ create_interface
+__all__ 
+__all__ = [
+    
+    'DocumentProcessor'
+'DocumentProcessor',
+    
+    'VectorStore'
+'VectorStore',
+    
+    'RAGEngine'
+'RAGEngine',
+    
+    'QualityEvaluator'
+'QualityEvaluator',
+    
+    'create_interface'
+'create_interface'
+]
+python
+
+
+--- PAGE 5 END ---
+
+"""
+"""
+Document Processor Module
+Document Processor Module
+Handles loading and chunking of documents (PDF, TXT)
+Handles loading and chunking of documents (PDF, TXT)
+"""
+"""
+import
+import os
+ os
+from
+from pathlib 
+ pathlib import
+import Path
+ Path
+from
+from typing 
+ typing import
+import List
+ List, Dict
+ Dict
+import
+import tiktoken
+ tiktoken
+from
+from pypdf 
+ pypdf import
+import PdfReader
+ PdfReader
+class
+class DocumentChunk
+DocumentChunk:
+    
+    """Represents a chunk of text from a document"""
+"""Represents a chunk of text from a document"""
+    
+    
+    
+    def
+def __init__
+__init__(self
+self, text
+ text: str
+str, metadata
+ metadata: Dict
+ Dict):
+        self
+        self.text 
+text = text
+ text
+        self
+        self.metadata 
+metadata = metadata
+ metadata
+        
+        
+    
+    def
+def __repr__
+__repr__(self
+self):
+        
+        return
+return f"DocumentChunk(text_length=
+f"DocumentChunk(text_length={len
+len(self
+self.text
+text)}, source=
+, source={self
+self.metadata
+metadata.get
+get('source'
+'source')})")"
+class
+class DocumentProcessor
+DocumentProcessor:
+    
+    """
+"""
+    Process documents and split them into semantic chunks
+    Process documents and split them into semantic chunks
+    """
+    """
+    
+    
+    
+    def
+def __init__
+__init__(self
+self, chunk_size
+ chunk_size: int
+int = 500
+500, chunk_overlap
+ chunk_overlap: int
+int = 100
+100):
+        
+        """
+"""
+        Initialize document processor
+        Initialize document processor
+        
+        
+        Args:
+        Args:
+            chunk_size: Target size for each chunk (in tokens)
+            chunk_size: Target size for each chunk (in tokens)
+            chunk_overlap: Number of tokens to overlap between chunks
+            chunk_overlap: Number of tokens to overlap between chunks
+        """
+        """
+        self
+        self.chunk_size 
+chunk_size = chunk_size
+ chunk_size
+        self
+        self.chunk_overlap 
+chunk_overlap = chunk_overlap
+ chunk_overlap
+        self
+        self.encoding 
+encoding = tiktoken
+ tiktoken.get_encoding
+get_encoding("cl100k_base"
+"cl100k_base")    # GPT-4 tokenizer
+# GPT-4 tokenizer
+        
+        
+    
+    def
+def load_documents
+load_documents(self
+self, directory
+ directory: Path
+ Path) -> List
+ List[DocumentChunk
+DocumentChunk]:
+        
+        """
+"""
+        Load all documents from a directory
+        Load all documents from a directory
+        
+        
+        Args:
+        Args:
+
+
+--- PAGE 6 END ---
+
+            directory: Path to directory containing documents
+            directory: Path to directory containing documents
+            
+            
+        Returns:
+        Returns:
+            List of DocumentChunk objects
+            List of DocumentChunk objects
+        """
+        """
+        all_chunks 
+        all_chunks = []
+        
+        
+        
+        ifif not
+not directory
+ directory.exists
+exists():
+            
+            print
+print(f"⚠️  Directory not found: 
+f"⚠️  Directory not found: {directory
+directory}")
+            
+            return
+return all_chunks
+ all_chunks
+        
+        
+        files 
+        files = list
+list(directory
+directory.glob
+glob("*.*"
+"*.*"))
+        
+        print
+print(f"📂 Found 
+f"📂 Found {len
+len(files
+files)} files in 
+ files in {directory
+directory}")
+        
+        
+        
+        for
+for file_path 
+ file_path inin files
+ files:
+            
+            print
+print(f"📄 Processing: 
+f"📄 Processing: {file_path
+file_path.name
+name}..."
+...")
+            
+            
+            
+            try
+try:
+                
+                ifif file_path
+ file_path.suffix
+suffix.lower
+lower() ==
+== '.pdf'
+'.pdf':
+                    chunks 
+                    chunks = self
+ self._process_pdf
+_process_pdf(file_path
+file_path)
+                
+                elif
+elif file_path
+ file_path.suffix
+suffix.lower
+lower() ==
+== '.txt'
+'.txt':
+                    chunks 
+                    chunks = self
+ self._process_txt
+_process_txt(file_path
+file_path)
+                
+                else
+else:
+                    
+                    print
+print(f"   ⚠️  Skipping unsupported format: 
+f"   ⚠️  Skipping unsupported format: {file_path
+file_path.suffix
+suffix}")
+                    
+                    continue
+continue
+                
+                
+                all_chunks
+                all_chunks.extend
+extend(chunks
+chunks)
+                
+                print
+print(f"   ✅ Created 
+f"   ✅ Created {len
+len(chunks
+chunks)} chunks"
+ chunks")
+                
+                
+            
+            except
+except Exception 
+ Exception as
+as e e:
+                
+                print
+print(f"   ❌ Error processing 
+f"   ❌ Error processing {file_path
+file_path.name
+name}: : {str
+str(e)}")
+        
+        
+        
+        print
+print(f"\n✅ Total chunks created: 
+f"\n✅ Total chunks created: {len
+len(all_chunks
+all_chunks)}")
+        
+        return
+return all_chunks
+ all_chunks
+    
+    
+    
+    def
+def _process_pdf
+_process_pdf(self
+self, file_path
+ file_path: Path
+ Path) -> List
+ List[DocumentChunk
+DocumentChunk]:
+        
+        """Process a PDF file"""
+"""Process a PDF file"""
+        chunks 
+        chunks = []
+        
+        
+        reader 
+        reader = PdfReader
+ PdfReader(str
+str(file_path
+file_path))
+        
+        
+        
+        for
+for page_num
+ page_num, page 
+ page inin enumerate
+enumerate(reader
+reader.pages
+pages, 1):
+            text 
+            text = page
+ page.extract_text
+extract_text()
+            
+            
+            
+            ifif not
+not text
+ text.strip
+strip():
+
+
+--- PAGE 7 END ---
+
+                
+                continue
+continue
+            
+            
+            
+            # Split page into chunks
+# Split page into chunks
+            page_chunks 
+            page_chunks = self
+ self._split_text
+_split_text(
+                text
+                text,
+                metadata
+                metadata={
+                    
+                    "source"
+"source": file_path
+ file_path.name
+name,
+                    
+                    "page"
+"page": page_num
+ page_num,
+                    
+                    "total_pages"
+"total_pages": len
+len(reader
+reader.pages
+pages)
+                
+                }
+            
+            )
+            chunks
+            chunks.extend
+extend(page_chunks
+page_chunks)
+        
+        
+        
+        return
+return chunks
+ chunks
+    
+    
+    
+    def
+def _process_txt
+_process_txt(self
+self, file_path
+ file_path: Path
+ Path) -> List
+ List[DocumentChunk
+DocumentChunk]:
+        
+        """Process a text file"""
+"""Process a text file"""
+        
+        with
+with open
+open(file_path
+file_path, 'r'
+'r', encoding
+ encoding='utf-8'
+'utf-8') as
+as f f:
+            text 
+            text = f f.read
+read()
+        
+        
+        
+        return
+return self
+ self._split_text
+_split_text(
+            text
+            text,
+            metadata
+            metadata={
+                
+                "source"
+"source": file_path
+ file_path.name
+name,
+                
+                "type"
+"type": "text"
+"text"
+            
+            }
+        
+        )
+    
+    
+    
+    def
+def _split_text
+_split_text(self
+self, text
+ text: str
+str, metadata
+ metadata: Dict
+ Dict) -> List
+ List[DocumentChunk
+DocumentChunk]:
+        
+        """
+"""
+        Split text into overlapping chunks based on token count
+        Split text into overlapping chunks based on token count
+        """
+        """
+        chunks 
+        chunks = []
+        
+        
+        
+        # Tokenize the text
+# Tokenize the text
+        tokens 
+        tokens = self
+ self.encoding
+encoding.encode
+encode(text
+text)
+        
+        
+        
+        # If text is smaller than chunk size, return as single chunk
+# If text is smaller than chunk size, return as single chunk
+        
+        ifif len
+len(tokens
+tokens) <=
+<= self
+ self.chunk_size
+chunk_size:
+            
+            return
+return [DocumentChunk
+DocumentChunk(text
+text, metadata
+ metadata)]
+        
+        
+        
+        # Split into overlapping chunks
+# Split into overlapping chunks
+        start 
+        start = 0
+        chunk_id 
+        chunk_id = 0
+        
+        
+
+
+--- PAGE 8 END ---
+
+File 6: src/vector_store.py
+        
+        while
+while start 
+ start < len
+len(tokens
+tokens):
+            
+            # Get chunk tokens
+# Get chunk tokens
+            end 
+            end = start 
+ start + self
+ self.chunk_size
+chunk_size
+            chunk_tokens 
+            chunk_tokens = tokens
+ tokens[start
+start:end
+end]
+            
+            
+            
+            # Decode back to text
+# Decode back to text
+            chunk_text 
+            chunk_text = self
+ self.encoding
+encoding.decode
+decode(chunk_tokens
+chunk_tokens)
+            
+            
+            
+            # Create chunk with metadata
+# Create chunk with metadata
+            chunk_metadata 
+            chunk_metadata = metadata
+ metadata.copy
+copy()
+            chunk_metadata
+            chunk_metadata.update
+update({
+                
+                "chunk_id"
+"chunk_id": chunk_id
+ chunk_id,
+                
+                "start_token"
+"start_token": start
+ start,
+                
+                "end_token"
+"end_token": end
+ end,
+                
+                "total_tokens"
+"total_tokens": len
+len(tokens
+tokens)
+            
+            })
+            
+            
+            chunks
+            chunks.append
+append(DocumentChunk
+DocumentChunk(chunk_text
+chunk_text, chunk_metadata
+ chunk_metadata))
+            
+            
+            
+            # Move start position (with overlap)
+# Move start position (with overlap)
+            start 
+            start +=
++= (self
+self.chunk_size 
+chunk_size - self
+ self.chunk_overlap
+chunk_overlap)
+            chunk_id 
+            chunk_id +=
++= 1
+        
+        
+        
+        return
+return chunks
+ chunks
+    
+    
+    
+    def
+def count_tokens
+count_tokens(self
+self, text
+ text: str
+str) -> int
+int:
+        
+        """Count tokens in text"""
+"""Count tokens in text"""
+        
+        return
+return len
+len(self
+self.encoding
+encoding.encode
+encode(text
+text))
+python
+
+
+--- PAGE 9 END ---
+
+"""
+"""
+Vector Store Module
+Vector Store Module
+Handles vector database operations using ChromaDB and Gemini embeddings
+Handles vector database operations using ChromaDB and Gemini embeddings
+"""
+"""
+from
+from typing 
+ typing import
+import List
+ List, Dict
+ Dict
+from
+from pathlib 
+ pathlib import
+import Path
+ Path
+import
+import chromadb
+ chromadb
+from
+from chromadb
+ chromadb.config 
+config import
+import Settings
+ Settings
+import
+import google
+ google.generativeai 
+generativeai as
+as genai
+ genai
+from
+from .document_processor 
+document_processor import
+import DocumentChunk
+ DocumentChunk
+class
+class VectorStore
+VectorStore:
+    
+    """
+"""
+    Manages vector database for semantic search using Gemini embeddings
+    Manages vector database for semantic search using Gemini embeddings
+    """
+    """
+    
+    
+    
+    def
+def __init__
+__init__(
+        self
+        self,
+        persist_directory
+        persist_directory: Path
+ Path,
+        collection_name
+        collection_name: str
+str = "documents"
+"documents",
+        embedding_model
+        embedding_model: str
+str = "models/text-embedding-004"
+"models/text-embedding-004"
+    
+    ):
+        
+        """
+"""
+        Initialize vector store
+        Initialize vector store
+        
+        
+        Args:
+        Args:
+            persist_directory: Where to store the database
+            persist_directory: Where to store the database
+            collection_name: Name for the collection
+            collection_name: Name for the collection
+            embedding_model: Gemini embedding model to use
+            embedding_model: Gemini embedding model to use
+        """
+        """
+        self
+        self.embedding_model 
+embedding_model = embedding_model
+ embedding_model
+        
+        
+        
+        # Initialize ChromaDB with persistence
+# Initialize ChromaDB with persistence
+        self
+        self.client 
+client = chromadb
+ chromadb.PersistentClient
+PersistentClient(
+            path
+            path=str
+str(persist_directory
+persist_directory),
+            settings
+            settings=Settings
+Settings(
+                anonymized_telemetry
+                anonymized_telemetry=False
+False,
+                allow_reset
+                allow_reset=True
+True
+            
+            )
+        
+        )
+        
+        
+        
+        # Get or create collection
+# Get or create collection
+
+
+--- PAGE 10 END ---
+
+        self
+        self.collection 
+collection = self
+ self.client
+client.get_or_create_collection
+get_or_create_collection(
+            name
+            name=collection_name
+collection_name,
+            metadata
+            metadata={"hnsw:space"
+"hnsw:space": "cosine"
+"cosine"}    # Use cosine similarity
+# Use cosine similarity
+        
+        )
+        
+        
+        
+        print
+print(f"📊 Vector Store initialized"
+f"📊 Vector Store initialized")
+        
+        print
+print(f"   Collection: 
+f"   Collection: {collection_name
+collection_name}")
+        
+        print
+print(f"   Documents: 
+f"   Documents: {self
+self.collection
+collection.count
+count()}")
+    
+    
+    
+    def
+def add_documents
+add_documents(self
+self, chunks
+ chunks: List
+ List[DocumentChunk
+DocumentChunk]) -> None
+None:
+        
+        """
+"""
+        Add document chunks to vector store
+        Add document chunks to vector store
+        
+        
+        Args:
+        Args:
+            chunks: List of DocumentChunk objects
+            chunks: List of DocumentChunk objects
+        """
+        """
+        
+        ifif not
+not chunks
+ chunks:
+            
+            print
+print("⚠️  No chunks to add"
+"⚠️  No chunks to add")
+            
+            return
+return
+        
+        
+        
+        print
+print(f"\n🔄 Adding 
+f"\n🔄 Adding {len
+len(chunks
+chunks)} chunks to vector store..."
+ chunks to vector store...")
+        
+        
+        
+        # Prepare data for ChromaDB
+# Prepare data for ChromaDB
+        documents 
+        documents = []
+        embeddings 
+        embeddings = []
+        metadatas 
+        metadatas = []
+        ids 
+        ids = []
+        
+        
+        
+        for
+for i i, chunk 
+ chunk inin enumerate
+enumerate(chunks
+chunks):
+            
+            # Generate embedding using Gemini
+# Generate embedding using Gemini
+            embedding 
+            embedding = self
+ self._get_embedding
+_get_embedding(chunk
+chunk.text
+text)
+            
+            
+            
+            # Prepare data
+# Prepare data
+            documents
+            documents.append
+append(chunk
+chunk.text
+text)
+            embeddings
+            embeddings.append
+append(embedding
+embedding)
+            metadatas
+            metadatas.append
+append(chunk
+chunk.metadata
+metadata)
+            ids
+            ids.append
+append(f"chunk_
+f"chunk_{i}")
+            
+            
+            
+            # Progress indicator
+# Progress indicator
+            
+            ifif (i i + 1) % 10
+10 ==
+== 0:
+                
+                print
+print(f"   Processed 
+f"   Processed {i i + 1}/{len
+len(chunks
+chunks)} chunks..."
+ chunks...")
+        
+        
+        
+        # Add to ChromaDB
+# Add to ChromaDB
+        self
+        self.collection
+collection.add
+add(
+            documents
+            documents=documents
+documents,
+
+
+--- PAGE 11 END ---
+
+            embeddings
+            embeddings=embeddings
+embeddings,
+            metadatas
+            metadatas=metadatas
+metadatas,
+            ids
+            ids=ids
+ids
+        
+        )
+        
+        
+        
+        print
+print(f"✅ Added 
+f"✅ Added {len
+len(chunks
+chunks)} chunks successfully"
+ chunks successfully")
+        
+        print
+print(f"   Total in database: 
+f"   Total in database: {self
+self.collection
+collection.count
+count()}")
+    
+    
+    
+    def
+def search
+search(self
+self, query
+ query: str
+str, top_k
+ top_k: int
+int = 3) -> List
+ List[Dict
+Dict]:
+        
+        """
+"""
+        Search for relevant document chunks using Gemini embeddings
+        Search for relevant document chunks using Gemini embeddings
+        
+        
+        Args:
+        Args:
+            query: User's question
+            query: User's question
+            top_k: Number of results to return
+            top_k: Number of results to return
+            
+            
+        Returns:
+        Returns:
+            List of dicts with text, metadata, and similarity score
+            List of dicts with text, metadata, and similarity score
+        """
+        """
+        
+        ifif self
+ self.collection
+collection.count
+count() ==
+== 0:
+            
+            print
+print("⚠️  No documents in vector store"
+"⚠️  No documents in vector store")
+            
+            return
+return []
+        
+        
+        
+        # Generate query embedding using Gemini
+# Generate query embedding using Gemini
+        query_embedding 
+        query_embedding = self
+ self._get_embedding
+_get_embedding(query
+query)
+        
+        
+        
+        # Search in ChromaDB
+# Search in ChromaDB
+        results 
+        results = self
+ self.collection
+collection.query
+query(
+            query_embeddings
+            query_embeddings=[query_embedding
+query_embedding],
+            n_results
+            n_results=top_k
+top_k,
+            include
+            include=["documents"
+"documents", "metadatas"
+"metadatas", "distances"
+"distances"]
+        
+        )
+        
+        
+        
+        # Format results
+# Format results
+        formatted_results 
+        formatted_results = []
+        
+        for
+for i  i inin range
+range(len
+len(results
+results['documents'
+'documents'][0])):
+            formatted_results
+            formatted_results.append
+append({
+                
+                'text'
+'text': results
+ results['documents'
+'documents'][0][i],
+                
+                'metadata'
+'metadata': results
+ results['metadatas'
+'metadatas'][0][i],
+                
+                'similarity'
+'similarity': 1 - results
+ results['distances'
+'distances'][0][i]    # Convert distance to similarity
+# Convert distance to similarity
+            
+            })
+        
+        
+        
+        return
+return formatted_results
+ formatted_results
+    
+    
+    
+    def
+def _get_embedding
+_get_embedding(self
+self, text
+ text: str
+str) -> List
+ List[float
+float]:
+
+
+--- PAGE 12 END ---
+
+File 7: src/rag_engine.py
+        
+        """
+"""
+        Generate embedding for text using Gemini API
+        Generate embedding for text using Gemini API
+        
+        
+        Args:
+        Args:
+            text: Text to embed
+            text: Text to embed
+            
+            
+        Returns:
+        Returns:
+            Embedding vector (list of floats)
+            Embedding vector (list of floats)
+        """
+        """
+        result 
+        result = genai
+ genai.embed_content
+embed_content(
+            model
+            model=self
+self.embedding_model
+embedding_model,
+            content
+            content=text
+text,
+            task_type
+            task_type="retrieval_document"
+"retrieval_document"
+        
+        )
+        
+        return
+return result
+ result['embedding'
+'embedding']
+    
+    
+    
+    def
+def clear
+clear(self
+self) -> None
+None:
+        
+        """Clear all documents from collection"""
+"""Clear all documents from collection"""
+        ids 
+        ids = self
+ self.collection
+collection.get
+get()['ids'
+'ids']
+        
+        ifif ids
+ ids:
+            self
+            self.collection
+collection.delete
+delete(ids
+ids=ids
+ids)
+            
+            print
+print(f"🗑️  Cleared 
+f"🗑️  Cleared {len
+len(ids
+ids)} documents from vector store"
+ documents from vector store")
+    
+    
+    
+    def
+def get_stats
+get_stats(self
+self) -> Dict
+ Dict:
+        
+        """Get statistics about the vector store"""
+"""Get statistics about the vector store"""
+        
+        return
+return {
+            
+            'total_documents'
+'total_documents': self
+ self.collection
+collection.count
+count(),
+            
+            'collection_name'
+'collection_name': self
+ self.collection
+collection.name
+name,
+            
+            'embedding_model'
+'embedding_model': self
+ self.embedding_model
+embedding_model
+        
+        }
+python
+
+
+--- PAGE 13 END ---
+
+"""
+"""
+RAG Engine Module
+RAG Engine Module
+Orchestrates retrieval and generation with Future AGI TraceAI instrumentation
+Orchestrates retrieval and generation with Future AGI TraceAI instrumentation
+Uses Google Gemini 2.0 Flash for generation
+Uses Google Gemini 2.0 Flash for generation
+"""
+"""
+import
+import os
+ os
+from
+from typing 
+ typing import
+import Dict
+ Dict, List
+ List
+import
+import google
+ google.generativeai 
+generativeai as
+as genai
+ genai
+from
+from traceai_google_genai 
+ traceai_google_genai import
+import GoogleGenAIInstrumentor
+ GoogleGenAIInstrumentor
+from
+from fi_instrumentation 
+ fi_instrumentation import
+import register
+ register
+from
+from .vector_store 
+vector_store import
+import VectorStore
+ VectorStore
+from
+from config 
+ config import
+import settings
+ settings
+class
+class RAGEngine
+RAGEngine:
+    
+    """
+"""
+    Retrieval-Augmented Generation Engine with Google Gemini and TraceAI
+    Retrieval-Augmented Generation Engine with Google Gemini and TraceAI
+    """
+    """
+    
+    
+    
+    def
+def __init__
+__init__(self
+self, vector_store
+ vector_store: VectorStore
+ VectorStore):
+        
+        """
+"""
+        Initialize RAG engine with tracing
+        Initialize RAG engine with tracing
+        
+        
+        Args:
+        Args:
+            vector_store: Vector store for document retrieval
+            vector_store: Vector store for document retrieval
+        """
+        """
+        self
+        self.vector_store 
+vector_store = vector_store
+ vector_store
+        
+        
+        
+        # Configure Gemini
+# Configure Gemini
+        genai
+        genai.configure
+configure(api_key
+api_key=settings
+settings.google_api_key
+google_api_key)
+        self
+        self.model 
+model = genai
+ genai.GenerativeModel
+GenerativeModel(settings
+settings.llm_model
+llm_model)
+        
+        
+        
+        # ============================================
+# ============================================
+        
+        # FUTURE AGI TRACING SETUP
+# FUTURE AGI TRACING SETUP
+        
+        # ============================================
+# ============================================
+        
+        
+        
+        print
+print("\n🔍 Setting up Future AGI TraceAI..."
+"\n🔍 Setting up Future AGI TraceAI...")
+        
+        
+        
+        # Step 1: Register project with Future AGI
+# Step 1: Register project with Future AGI
+        trace_provider 
+        trace_provider = register
+ register(
+            project_name
+            project_name=settings
+settings.project_name
+project_name,
+            fi_api_key
+            fi_api_key=settings
+settings.fi_api_key
+fi_api_key,
+            fi_secret_key
+            fi_secret_key=settings
+settings.fi_secret_key
+fi_secret_key,
+
+
+--- PAGE 14 END ---
+
+            environment
+            environment=settings
+settings.environment
+environment
+        
+        )
+        
+        
+        
+        # Step 2: Instrument Google GenAI SDK
+# Step 2: Instrument Google GenAI SDK
+        GoogleGenAIInstrumentor
+        GoogleGenAIInstrumentor().instrument
+instrument(tracer_provider
+tracer_provider=trace_provider
+trace_provider)
+        
+        
+        
+        print
+print("✅ TraceAI instrumentation complete!"
+"✅ TraceAI instrumentation complete!")
+        
+        print
+print(f"   Project: 
+f"   Project: {settings
+settings.project_name
+project_name}")
+        
+        print
+print(f"   View traces at: https://app.futureagi.com"
+f"   View traces at: https://app.futureagi.com")
+        
+        
+        
+        # ============================================
+# ============================================
+        
+        # All Gemini calls now automatically traced!
+# All Gemini calls now automatically traced!
+        
+        # ============================================
+# ============================================
+    
+    
+    
+    def
+def query
+query(self
+self, user_question
+ user_question: str
+str, top_k
+ top_k: int
+int = 3) -> Dict
+ Dict:
+        
+        """
+"""
+        Process a user question and generate an answer
+        Process a user question and generate an answer
+        
+        
+        Args:
+        Args:
+            user_question: The user's question
+            user_question: The user's question
+            top_k: Number of document chunks to retrieve
+            top_k: Number of document chunks to retrieve
+            
+            
+        Returns:
+        Returns:
+            Dict with answer, sources, and metadata
+            Dict with answer, sources, and metadata
+        """
+        """
+        
+        
+        
+        # Step 1: Retrieve relevant documents
+# Step 1: Retrieve relevant documents
+        
+        print
+print(f"\n🔍 Retrieving relevant documents..."
+f"\n🔍 Retrieving relevant documents...")
+        relevant_chunks 
+        relevant_chunks = self
+ self.vector_store
+vector_store.search
+search(user_question
+user_question, top_k
+ top_k=top_k
+top_k)
+        
+        
+        
+        ifif not
+not relevant_chunks
+ relevant_chunks:
+            
+            return
+return {
+                
+                'answer'
+'answer': "I don't have enough information to answer that question."
+"I don't have enough information to answer that question.",
+                
+                'sources'
+'sources': [],
+                
+                'metadata'
+'metadata': {
+                    
+                    'chunks_retrieved'
+'chunks_retrieved': 0,
+                    
+                    'model'
+'model': settings
+ settings.llm_model
+llm_model
+                
+                }
+            
+            }
+        
+        
+        
+        print
+print(f"   Found 
+f"   Found {len
+len(relevant_chunks
+relevant_chunks)} relevant chunks"
+ relevant chunks")
+        
+        
+        
+        # Step 2: Format context
+# Step 2: Format context
+        context 
+        context = self
+ self._format_context
+_format_context(relevant_chunks
+relevant_chunks)
+        
+        
+
+
+--- PAGE 15 END ---
+
+        
+        # Step 3: Generate answer with Gemini
+# Step 3: Generate answer with Gemini
+        
+        # This Gemini call is AUTOMATICALLY TRACED by TraceAI!
+# This Gemini call is AUTOMATICALLY TRACED by TraceAI!
+        
+        print
+print(f"🤖 Generating answer with 
+f"🤖 Generating answer with {settings
+settings.llm_model
+llm_model}..."
+...")
+        
+        
+        prompt 
+        prompt = f"""
+f"""{self
+self._get_system_prompt
+_get_system_prompt()}
+Context from documents:
+Context from documents:
+{context
+context}
+Question: 
+Question: {user_question
+user_question}
+Please provide a clear and accurate answer based on the context above. 
+Please provide a clear and accurate answer based on the context above. 
+If the context doesn't contain enough information, say so.
+If the context doesn't contain enough information, say so.
+Always cite which document/page your information comes from."""
+Always cite which document/page your information comes from."""
+        response 
+        response = self
+ self.model
+model.generate_content
+generate_content(
+            prompt
+            prompt,
+            generation_config
+            generation_config=genai
+genai.types
+types.GenerationConfig
+GenerationConfig(
+                temperature
+                temperature=settings
+settings.temperature
+temperature,
+                max_output_tokens
+                max_output_tokens=settings
+settings.max_output_tokens
+max_output_tokens
+            
+            )
+        
+        )
+        
+        
+        answer 
+        answer = response
+ response.text
+text
+        
+        
+        
+        # Extract usage metadata (if available)
+# Extract usage metadata (if available)
+        usage_metadata 
+        usage_metadata = getattr
+getattr(response
+response, 'usage_metadata'
+'usage_metadata', None
+None)
+        prompt_tokens 
+        prompt_tokens = getattr
+getattr(usage_metadata
+usage_metadata, 'prompt_token_count'
+'prompt_token_count', 0) ifif usage_metadata 
+ usage_metadata else
+else 0
+        completion_tokens 
+        completion_tokens = getattr
+getattr(usage_metadata
+usage_metadata, 'candidates_token_count'
+'candidates_token_count', 0) ifif usage_metadata 
+ usage_metadata else
+else 0
+        total_tokens 
+        total_tokens = prompt_tokens 
+ prompt_tokens + completion_tokens
+ completion_tokens
+        
+        
+        
+        # Step 4: Format response
+# Step 4: Format response
+        result 
+        result = {
+            
+            'answer'
+'answer': answer
+ answer,
+            
+            'sources'
+'sources': self
+ self._format_sources
+_format_sources(relevant_chunks
+relevant_chunks),
+            
+            'metadata'
+'metadata': {
+                
+                'chunks_retrieved'
+'chunks_retrieved': len
+len(relevant_chunks
+relevant_chunks),
+                
+                'model'
+'model': settings
+ settings.llm_model
+llm_model,
+                
+                'temperature'
+'temperature': settings
+ settings.temperature
+temperature,
+                
+                'prompt_tokens'
+'prompt_tokens': prompt_tokens
+ prompt_tokens,
+                
+                'completion_tokens'
+'completion_tokens': completion_tokens
+ completion_tokens,
+                
+                'total_tokens'
+'total_tokens': total_tokens
+ total_tokens,
+                
+                'cost_estimate'
+'cost_estimate': self
+ self._calculate_cost
+_calculate_cost(total_tokens
+total_tokens)
+            
+            }
+        
+        }
+
+
+--- PAGE 16 END ---
+
+        
+        
+        
+        print
+print(f"✅ Answer generated!"
+f"✅ Answer generated!")
+        
+        print
+print(f"   Tokens used: 
+f"   Tokens used: {total_tokens
+total_tokens}")
+        
+        print
+print(f"   Estimated cost: $
+f"   Estimated cost: ${result
+result['metadata'
+'metadata']['cost_estimate'
+'cost_estimate']:.6f
+.6f}")
+        
+        
+        
+        return
+return result
+ result
+    
+    
+    
+    def
+def _format_context
+_format_context(self
+self, chunks
+ chunks: List
+ List[Dict
+Dict]) -> str
+str:
+        
+        """Format retrieved chunks into context string"""
+"""Format retrieved chunks into context string"""
+        context_parts 
+        context_parts = []
+        
+        
+        
+        for
+for i i, chunk 
+ chunk inin enumerate
+enumerate(chunks
+chunks, 1):
+            source 
+            source = chunk
+ chunk['metadata'
+'metadata'].get
+get('source'
+'source', 'Unknown'
+'Unknown')
+            page 
+            page = chunk
+ chunk['metadata'
+'metadata'].get
+get('page'
+'page', 'N/A'
+'N/A')
+            
+            
+            context_parts
+            context_parts.append
+append(
+                
+                f"[Source 
+f"[Source {i}: : {source
+source}, Page 
+, Page {page
+page}]\n
+]\n{chunk
+chunk['text'
+'text']}\n"
+\n"
+            
+            )
+        
+        
+        
+        return
+return "\n"
+"\n".join
+join(context_parts
+context_parts)
+    
+    
+    
+    def
+def _format_sources
+_format_sources(self
+self, chunks
+ chunks: List
+ List[Dict
+Dict]) -> List
+ List[Dict
+Dict]:
+        
+        """Format source information for response"""
+"""Format source information for response"""
+        sources 
+        sources = []
+        
+        
+        
+        for
+for i i, chunk 
+ chunk inin enumerate
+enumerate(chunks
+chunks, 1):
+            sources
+            sources.append
+append({
+                
+                'source_id'
+'source_id': i i,
+                
+                'filename'
+'filename': chunk
+ chunk['metadata'
+'metadata'].get
+get('source'
+'source', 'Unknown'
+'Unknown'),
+                
+                'page'
+'page': chunk
+ chunk['metadata'
+'metadata'].get
+get('page'
+'page', 'N/A'
+'N/A'),
+                
+                'similarity'
+'similarity': f"f"{chunk
+chunk.get
+get('similarity'
+'similarity', 0):.3f
+.3f}",
+                
+                'text_preview'
+'text_preview': chunk
+ chunk['text'
+'text'][:200
+200] + "..."
+"..."
+            
+            })
+        
+        
+        
+        return
+return sources
+ sources
+    
+    
+    
+    def
+def _get_system_prompt
+_get_system_prompt(self
+self) -> str
+str:
+        
+        """Get system prompt for LLM"""
+"""Get system prompt for LLM"""
+        
+        return
+return """You are a helpful AI assistant that answers questions based on provided documents.
+"""You are a helpful AI assistant that answers questions based on provided documents.
+Guidelines:
+Guidelines:
+- Provide accurate, concise answers based on the context
+- Provide accurate, concise answers based on the context
+- Always cite your sources (mention the document and page)
+- Always cite your sources (mention the document and page)
+- If information is not in the context, say "I don't have enough information"
+- If information is not in the context, say "I don't have enough information"
+- Be objective and factual
+- Be objective and factual
+
+
+--- PAGE 17 END ---
+
+File 8: src/evaluator.py
+- Use clear, professional language"""
+- Use clear, professional language"""
+    
+    
+    
+    def
+def _calculate_cost
+_calculate_cost(self
+self, total_tokens
+ total_tokens: int
+int) -> float
+float:
+        
+        """
+"""
+        Calculate estimated cost for Gemini API call
+        Calculate estimated cost for Gemini API call
+        
+        
+        Gemini 2.0 Flash pricing (as of 2024):
+        Gemini 2.0 Flash pricing (as of 2024):
+        - Free tier: 15 RPM, 1M TPM, 1500 RPD
+        - Free tier: 15 RPM, 1M TPM, 1500 RPD
+        - Paid: $0.075 per 1M input tokens, $0.30 per 1M output tokens
+        - Paid: $0.075 per 1M input tokens, $0.30 per 1M output tokens
+        
+        
+        For simplicity, we'll use average rate
+        For simplicity, we'll use average rate
+        """
+        """
+        
+        # Average cost per 1M tokens
+# Average cost per 1M tokens
+        avg_cost_per_million 
+        avg_cost_per_million = 0.1875
+0.1875    # ($0.075 + $0.30) / 2
+# ($0.075 + $0.30) / 2
+        
+        
+        
+        return
+return (total_tokens 
+total_tokens / 1_000_000
+1_000_000) * avg_cost_per_million
+ avg_cost_per_million
+python
+
+
+--- PAGE 18 END ---
+
+"""
+"""
+Quality Evaluator Module
+Quality Evaluator Module
+Automated evaluation of RAG outputs using Future AGI's AI Evaluation SDK
+Automated evaluation of RAG outputs using Future AGI's AI Evaluation SDK
+"""
+"""
+from
+from typing 
+ typing import
+import Dict
+ Dict, List
+ List
+from
+from fi fi.evals 
+evals import
+import Evaluator
+ Evaluator
+from
+from config 
+ config import
+import settings
+ settings
+class
+class QualityEvaluator
+QualityEvaluator:
+    
+    """
+"""
+    Automated Quality Evaluation for RAG Outputs
+    Automated Quality Evaluation for RAG Outputs
+    """
+    """
+    
+    
+    
+    def
+def __init__
+__init__(self
+self):
+        
+        """Initialize evaluator with Future AGI credentials"""
+"""Initialize evaluator with Future AGI credentials"""
+        self
+        self.evaluator 
+evaluator = Evaluator
+ Evaluator(
+            fi_api_key
+            fi_api_key=settings
+settings.fi_api_key
+fi_api_key,
+            fi_secret_key
+            fi_secret_key=settings
+settings.fi_secret_key
+fi_secret_key
+        
+        )
+        
+        
+        self
+        self.eval_templates 
+eval_templates = settings
+ settings.eval_templates
+eval_templates
+        
+        
+        
+        print
+print("\n🔍 Quality Evaluator initialized"
+"\n🔍 Quality Evaluator initialized")
+        
+        print
+print(f"   Evaluation templates: 
+f"   Evaluation templates: {', '
+', '.join
+join(self
+self.eval_templates
+eval_templates)}")
+    
+    
+    
+    def
+def evaluate_response
+evaluate_response(
+        self
+        self,
+        question
+        question: str
+str,
+        answer
+        answer: str
+str,
+        context
+        context: str
+str,
+        sources
+        sources: List
+ List[Dict
+Dict] = None
+None
+    
+    ) -> Dict
+ Dict:
+        
+        """
+"""
+        Evaluate a RAG response for quality
+        Evaluate a RAG response for quality
+        
+        
+        Args:
+        Args:
+            question: User's original question
+            question: User's original question
+            answer: Generated answer
+            answer: Generated answer
+            context: Retrieved document context
+            context: Retrieved document context
+            sources: List of source documents (optional)
+            sources: List of source documents (optional)
+            
+            
+        Returns:
+        Returns:
+
+
+--- PAGE 19 END ---
+
+            Dict with evaluation results and explanations
+            Dict with evaluation results and explanations
+        """
+        """
+        
+        ifif not
+not settings
+ settings.enable_evaluation
+enable_evaluation:
+            
+            return
+return self
+ self._mock_evaluation
+_mock_evaluation()
+        
+        
+        
+        print
+print(f"\n📊 Running quality evaluation..."
+f"\n📊 Running quality evaluation...")
+        
+        
+        
+        try
+try:
+            
+            # Run evaluation with Future AGI
+# Run evaluation with Future AGI
+            result 
+            result = self
+ self.evaluator
+evaluator.evaluate
+evaluate(
+                eval_templates
+                eval_templates=self
+self.eval_templates
+eval_templates,
+                inputs
+                inputs={
+                    
+                    "input"
+"input": question
+ question,
+                    
+                    "output"
+"output": answer
+ answer,
+                    
+                    "context"
+"context": context
+ context
+                
+                },
+                model_name
+                model_name=settings
+settings.eval_model
+eval_model
+            
+            )
+            
+            
+            
+            # Format results
+# Format results
+            eval_results 
+            eval_results = {}
+            
+            
+            
+            for
+for eval_result 
+ eval_result inin result
+ result.eval_results
+eval_results:
+                template_name 
+                template_name = eval_result
+ eval_result.template
+template
+                
+                
+                eval_results
+                eval_results[template_name
+template_name] = {
+                    
+                    'score'
+'score': eval_result
+ eval_result.output
+output,
+                    
+                    'passed'
+'passed': eval_result
+ eval_result.passed
+passed,
+                    
+                    'reason'
+'reason': eval_result
+ eval_result.reason
+reason,
+                    
+                    'severity'
+'severity': self
+ self._get_severity
+_get_severity(template_name
+template_name, eval_result
+ eval_result.passed
+passed)
+                
+                }
+                
+                
+                
+                # Print results
+# Print results
+                status 
+                status = "✅ PASS"
+"✅ PASS" ifif eval_result
+ eval_result.passed 
+passed else
+else "❌ FAIL"
+"❌ FAIL"
+                
+                print
+print(f"   
+f"   {template_name
+template_name}: : {status
+status}")
+                
+                ifif not
+not eval_result
+ eval_result.passed
+passed:
+                    
+                    print
+print(f"      Reason: 
+f"      Reason: {eval_result
+eval_result.reason
+reason}")
+            
+            
+            
+            return
+return {
+                
+                'overall_passed'
+'overall_passed': all
+all(r['passed'
+'passed'] for
+for r 
+ r inin eval_results
+ eval_results.values
+values()),
+                
+                'evaluations'
+'evaluations': eval_results
+ eval_results,
+                
+                'summary'
+'summary': self
+ self._create_summary
+_create_summary(eval_results
+eval_results)
+            
+            }
+            
+            
+        
+        except
+except Exception 
+ Exception as
+as e e:
+
+
+--- PAGE 20 END ---
+
+            
+            print
+print(f"⚠️  Evaluation error: 
+f"⚠️  Evaluation error: {str
+str(e)}")
+            
+            return
+return self
+ self._mock_evaluation
+_mock_evaluation()
+    
+    
+    
+    def
+def _get_severity
+_get_severity(self
+self, template_name
+ template_name: str
+str, passed
+ passed: bool
+bool) -> str
+str:
+        
+        """Get severity level for failed evaluations"""
+"""Get severity level for failed evaluations"""
+        
+        ifif passed
+ passed:
+            
+            return
+return "none"
+"none"
+        
+        
+        
+        # Critical failures
+# Critical failures
+        
+        ifif template_name 
+ template_name inin ["hallucination"
+"hallucination", "toxicity"
+"toxicity", "pii_detection"
+"pii_detection"]:
+            
+            return
+return "critical"
+"critical"
+        
+        
+        
+        # Important failures
+# Important failures
+        
+        ifif template_name 
+ template_name inin ["relevance"
+"relevance", "factual_accuracy"
+"factual_accuracy"]:
+            
+            return
+return "high"
+"high"
+        
+        
+        
+        # Minor issues
+# Minor issues
+        
+        return
+return "medium"
+"medium"
+    
+    
+    
+    def
+def _create_summary
+_create_summary(self
+self, eval_results
+ eval_results: Dict
+ Dict) -> str
+str:
+        
+        """Create human-readable summary"""
+"""Create human-readable summary"""
+        total 
+        total = len
+len(eval_results
+eval_results)
+        passed 
+        passed = sum
+sum(1 for
+for r 
+ r inin eval_results
+ eval_results.values
+values() ifif r r['passed'
+'passed'])
+        
+        
+        
+        ifif passed 
+ passed ==
+== total
+ total:
+            
+            return
+return f"✅ All 
+f"✅ All {total
+total} quality checks passed!"
+ quality checks passed!"
+        
+        
+        failed_checks 
+        failed_checks = [
+            name 
+            name for
+for name
+ name, result 
+ result inin eval_results
+ eval_results.items
+items() 
+            
+            ifif not
+not result
+ result['passed'
+'passed']
+        
+        ]
+        
+        
+        
+        return
+return f"⚠️  
+f"⚠️  {len
+len(failed_checks
+failed_checks)} of 
+ of {total
+total} checks failed: 
+ checks failed: {', '
+', '.join
+join(failed_checks
+failed_checks)}"
+    
+    
+    
+    def
+def _mock_evaluation
+_mock_evaluation(self
+self) -> Dict
+ Dict:
+        
+        """Mock evaluation for testing when evaluation is disabled"""
+"""Mock evaluation for testing when evaluation is disabled"""
+        
+        return
+return {
+            
+            'overall_passed'
+'overall_passed': True
+True,
+            
+            'evaluations'
+'evaluations': {
+                template
+                template: {
+                    
+                    'score'
+'score': 'PASS'
+'PASS',
+                    
+                    'passed'
+'passed': True
+True,
+                    
+                    'reason'
+'reason': 'Evaluation disabled'
+'Evaluation disabled',
+                    
+                    'severity'
+'severity': 'none'
+'none'
+                
+                }
+
+
+--- PAGE 21 END ---
+
+File 9: src/ui.py
+                
+                for
+for template 
+ template inin self
+ self.eval_templates
+eval_templates
+            
+            },
+            
+            'summary'
+'summary': '⚠️  Evaluation disabled'
+'⚠️  Evaluation disabled'
+        
+        }
+    
+    
+    
+    def
+def format_evaluation_for_ui
+format_evaluation_for_ui(self
+self, evaluation
+ evaluation: Dict
+ Dict) -> str
+str:
+        
+        """
+"""
+        Format evaluation results for display in UI
+        Format evaluation results for display in UI
+        
+        
+        Args:
+        Args:
+            evaluation: Evaluation results dict
+            evaluation: Evaluation results dict
+            
+            
+        Returns:
+        Returns:
+            Formatted string for UI display
+            Formatted string for UI display
+        """
+        """
+        lines 
+        lines = []
+        lines
+        lines.append
+append("\n📊 **Quality Evaluation:**\n"
+"\n📊 **Quality Evaluation:**\n")
+        lines
+        lines.append
+append(f"f"{evaluation
+evaluation['summary'
+'summary']}\n"
+\n")
+        
+        
+        
+        for
+for name
+ name, result 
+ result inin evaluation
+ evaluation['evaluations'
+'evaluations'].items
+items():
+            status_icon 
+            status_icon = "✅"
+"✅" ifif result
+ result['passed'
+'passed'] else
+else "❌"
+"❌"
+            lines
+            lines.append
+append(f"f"{status_icon
+status_icon} **
+ **{name
+name.upper
+upper()}**: 
+**: {result
+result['score'
+'score']}")
+            
+            
+            
+            ifif not
+not result
+ result['passed'
+'passed']:
+                lines
+                lines.append
+append(f"   *Reason*: 
+f"   *Reason*: {result
+result['reason'
+'reason']}")
+                lines
+                lines.append
+append(f"   *Severity*: 
+f"   *Severity*: {result
+result['severity'
+'severity']}")
+        
+        
+        
+        return
+return "\n"
+"\n".join
+join(lines
+lines)
+python
+
+
+--- PAGE 22 END ---
+
+"""
+"""
+User Interface Module
+User Interface Module
+Gradio-based web interface for the RAG system
+Gradio-based web interface for the RAG system
+"""
+"""
+import
+import gradio 
+ gradio as
+as gr
+ gr
+from
+from typing 
+ typing import
+import Tuple
+ Tuple
+from
+from .rag_engine 
+rag_engine import
+import RAGEngine
+ RAGEngine
+from
+from .evaluator 
+evaluator import
+import QualityEvaluator
+ QualityEvaluator
+class
+class RAGUI
+RAGUI:
+    
+    """Gradio UI for Document Q&A System"""
+"""Gradio UI for Document Q&A System"""
+    
+    
+    
+    def
+def __init__
+__init__(self
+self, rag_engine
+ rag_engine: RAGEngine
+ RAGEngine, evaluator
+ evaluator: QualityEvaluator
+ QualityEvaluator):
+        
+        """
+"""
+        Initialize UI with RAG engine and evaluator
+        Initialize UI with RAG engine and evaluator
+        
+        
+        Args:
+        Args:
+            rag_engine: RAG engine for question answering
+            rag_engine: RAG engine for question answering
+            evaluator: Quality evaluator
+            evaluator: Quality evaluator
+        """
+        """
+        self
+        self.rag_engine 
+rag_engine = rag_engine
+ rag_engine
+        self
+        self.evaluator 
+evaluator = evaluator
+ evaluator
+    
+    
+    
+    def
+def process_question
+process_question(self
+self, question
+ question: str
+str, top_k
+ top_k: int
+int) -> Tuple
+ Tuple[str
+str, str
+str, str
+str, str
+str]:
+        
+        """
+"""
+        Process a user question and return formatted results
+        Process a user question and return formatted results
+        
+        
+        Args:
+        Args:
+            question: User's question
+            question: User's question
+            top_k: Number of chunks to retrieve
+            top_k: Number of chunks to retrieve
+            
+            
+        Returns:
+        Returns:
+            Tuple of (answer, sources, evaluation, metadata)
+            Tuple of (answer, sources, evaluation, metadata)
+        """
+        """
+        
+        ifif not
+not question
+ question.strip
+strip():
+            
+            return
+return (
+                
+                "Please enter a question."
+"Please enter a question.",
+                
+                ""
+"",
+                
+                ""
+"",
+                
+                ""
+""
+            
+            )
+        
+        
+
+
+--- PAGE 23 END ---
+
+        
+        try
+try:
+            
+            # Get answer from RAG engine
+# Get answer from RAG engine
+            result 
+            result = self
+ self.rag_engine
+rag_engine.query
+query(question
+question, top_k
+ top_k=top_k
+top_k)
+            
+            
+            
+            # Format answer
+# Format answer
+            answer 
+            answer = result
+ result['answer'
+'answer']
+            
+            
+            
+            # Format sources
+# Format sources
+            sources 
+            sources = self
+ self._format_sources
+_format_sources(result
+result['sources'
+'sources'])
+            
+            
+            
+            # Run evaluation
+# Run evaluation
+            context 
+            context = self
+ self._extract_context
+_extract_context(result
+result['sources'
+'sources'])
+            evaluation_result 
+            evaluation_result = self
+ self.evaluator
+evaluator.evaluate_response
+evaluate_response(
+                question
+                question=question
+question,
+                answer
+                answer=answer
+answer,
+                context
+                context=context
+context,
+                sources
+                sources=result
+result['sources'
+'sources']
+            
+            )
+            evaluation 
+            evaluation = self
+ self.evaluator
+evaluator.format_evaluation_for_ui
+format_evaluation_for_ui(evaluation_result
+evaluation_result)
+            
+            
+            
+            # Format metadata
+# Format metadata
+            metadata 
+            metadata = self
+ self._format_metadata
+_format_metadata(result
+result['metadata'
+'metadata'])
+            
+            
+            
+            return
+return answer
+ answer, sources
+ sources, evaluation
+ evaluation, metadata
+ metadata
+            
+            
+        
+        except
+except Exception 
+ Exception as
+as e e:
+            error_msg 
+            error_msg = f"❌ Error: 
+f"❌ Error: {str
+str(e)}"
+            
+            return
+return error_msg
+ error_msg, ""
+"", ""
+"", ""
+""
+    
+    
+    
+    def
+def _format_sources
+_format_sources(self
+self, sources
+ sources: list
+list) -> str
+str:
+        
+        """Format sources for display"""
+"""Format sources for display"""
+        
+        ifif not
+not sources
+ sources:
+            
+            return
+return "No sources found."
+"No sources found."
+        
+        
+        formatted 
+        formatted = ["## 📚 Sources\n"
+"## 📚 Sources\n"]
+        
+        
+        
+        for
+for source 
+ source inin sources
+ sources:
+            formatted
+            formatted.append
+append(f"""
+f"""
+### Source 
+### Source {source
+source['source_id'
+'source_id']}: : {source
+source['filename'
+'filename']}
+- **Page**: 
+- **Page**: {source
+source['page'
+'page']}
+- **Similarity**: 
+- **Similarity**: {source
+source['similarity'
+'similarity']}
+**Text Preview:**
+**Text Preview:**
+> > {source
+source['text_preview'
+'text_preview']}
+
+
+--- PAGE 24 END ---
+
+---
+---
+"""
+""")
+        
+        
+        
+        return
+return "\n"
+"\n".join
+join(formatted
+formatted)
+    
+    
+    
+    def
+def _format_metadata
+_format_metadata(self
+self, metadata
+ metadata: dict
+dict) -> str
+str:
+        
+        """Format metadata for display"""
+"""Format metadata for display"""
+        
+        return
+return f"""
+f"""
+## 📊 Request Metadata
+## 📊 Request Metadata
+- **Model**: 
+- **Model**: {metadata
+metadata['model'
+'model']}
+- **Temperature**: 
+- **Temperature**: {metadata
+metadata['temperature'
+'temperature']}
+- **Chunks Retrieved**: 
+- **Chunks Retrieved**: {metadata
+metadata['chunks_retrieved'
+'chunks_retrieved']}
+### Token Usage:
+### Token Usage:
+- **Prompt Tokens**: 
+- **Prompt Tokens**: {metadata
+metadata['prompt_tokens'
+'prompt_tokens']}
+- **Completion Tokens**: 
+- **Completion Tokens**: {metadata
+metadata['completion_tokens'
+'completion_tokens']}
+- **Total Tokens**: 
+- **Total Tokens**: {metadata
+metadata['total_tokens'
+'total_tokens']}
+### Cost:
+### Cost:
+- **Estimated Cost**: $
+- **Estimated Cost**: ${metadata
+metadata['cost_estimate'
+'cost_estimate']:.6f
+.6f}
+"""
+"""
+    
+    
+    
+    def
+def _extract_context
+_extract_context(self
+self, sources
+ sources: list
+list) -> str
+str:
+        
+        """Extract context text from sources"""
+"""Extract context text from sources"""
+        
+        return
+return "\n\n"
+"\n\n".join
+join([s['text_preview'
+'text_preview'] for
+for s 
+ s inin sources
+ sources])
+    
+    
+    
+    def
+def create_interface
+create_interface(self
+self) -> gr
+ gr.Blocks
+Blocks:
+        
+        """Create Gradio interface"""
+"""Create Gradio interface"""
+        
+        with
+with gr
+ gr.Blocks
+Blocks(
+            title
+            title="Gemini Document Q&A with Future AGI"
+"Gemini Document Q&A with Future AGI",
+            theme
+            theme=gr
+gr.themes
+themes.Soft
+Soft()
+        
+        ) as
+as interface
+ interface:
+            
+            
+            gr
+            gr.Markdown
+Markdown("""
+"""
+            # 📚 Gemini Document Q&A System
+            # 📚 Gemini Document Q&A System
+            ### Powered by Google Gemini 2.0 Flash & Future AGI
+            ### Powered by Google Gemini 2.0 Flash & Future AGI
+            
+            
+            Ask questions about your documents and get AI-powered answers with:
+            Ask questions about your documents and get AI-powered answers with:
+            - ✅ Automatic quality evaluation
+            - ✅ Automatic quality evaluation
+            - 🔍 Complete tracing and observability
+            - 🔍 Complete tracing and observability
+            - 📊 Source citations
+            - 📊 Source citations
+            - 💰 Cost tracking (FREE with Gemini!)
+            - 💰 Cost tracking (FREE with Gemini!)
+            """
+            """)
+            
+            
+
+
+--- PAGE 25 END ---
+
+            
+            with
+with gr
+ gr.Row
+Row():
+                
+                with
+with gr
+ gr.Column
+Column(scale
+scale=2):
+                    
+                    # Input section
+# Input section
+                    question_input 
+                    question_input = gr
+ gr.Textbox
+Textbox(
+                        label
+                        label="Your Question"
+"Your Question",
+                        placeholder
+                        placeholder="What would you like to know about your documents?"
+"What would you like to know about your documents?",
+                        lines
+                        lines=3
+                    
+                    )
+                    
+                    
+                    
+                    with
+with gr
+ gr.Row
+Row():
+                        top_k_slider 
+                        top_k_slider = gr
+ gr.Slider
+Slider(
+                            minimum
+                            minimum=1,
+                            maximum
+                            maximum=10
+10,
+                            value
+                            value=3,
+                            step
+                            step=1,
+                            label
+                            label="Number of chunks to retrieve"
+"Number of chunks to retrieve",
+                            info
+                            info="Higher = more context but slower"
+"Higher = more context but slower"
+                        
+                        )
+                    
+                    
+                    submit_btn 
+                    submit_btn = gr
+ gr.Button
+Button(
+                        
+                        "🔍 Ask Question"
+"🔍 Ask Question",
+                        variant
+                        variant="primary"
+"primary",
+                        size
+                        size="lg"
+"lg"
+                    
+                    )
+                    
+                    
+                    gr
+                    gr.Markdown
+Markdown("""
+"""
+                    ---
+                    ---
+                    **💡 Tips:**
+                    **💡 Tips:**
+                    - Be specific in your questions
+                    - Be specific in your questions
+                    - Ask about content in your uploaded documents
+                    - Ask about content in your uploaded documents
+                    - Check the evaluation results for answer quality
+                    - Check the evaluation results for answer quality
+                    - Using FREE Google Gemini 2.0 Flash!
+                    - Using FREE Google Gemini 2.0 Flash!
+                    """
+                    """)
+            
+            
+            
+            # Output section
+# Output section
+            
+            with
+with gr
+ gr.Column
+Column(scale
+scale=3):
+                answer_output 
+                answer_output = gr
+ gr.Markdown
+Markdown(
+                    label
+                    label="Answer"
+"Answer",
+                    value
+                    value=""
+""
+                
+                )
+                
+                
+                
+                with
+with gr
+ gr.Tabs
+Tabs():
+                    
+                    with
+with gr
+ gr.Tab
+Tab("📚 Sources"
+"📚 Sources"):
+                        sources_output 
+                        sources_output = gr
+ gr.Markdown
+Markdown(value
+value=""
+"")
+                    
+                    
+
+
+--- PAGE 26 END ---
+
+                    
+                    with
+with gr
+ gr.Tab
+Tab("📊 Quality Evaluation"
+"📊 Quality Evaluation"):
+                        evaluation_output 
+                        evaluation_output = gr
+ gr.Markdown
+Markdown(value
+value=""
+"")
+                    
+                    
+                    
+                    with
+with gr
+ gr.Tab
+Tab("📈 Metadata"
+"📈 Metadata"):
+                        metadata_output 
+                        metadata_output = gr
+ gr.Markdown
+Markdown(value
+value=""
+"")
+            
+            
+            
+            # Connect components
+# Connect components
+            submit_btn
+            submit_btn.click
+click(
+                fn
+                fn=self
+self.process_question
+process_question,
+                inputs
+                inputs=[question_input
+question_input, top_k_slider
+ top_k_slider],
+                outputs
+                outputs=[
+                    answer_output
+                    answer_output,
+                    sources_output
+                    sources_output,
+                    evaluation_output
+                    evaluation_output,
+                    metadata_output
+                    metadata_output
+                
+                ]
+            
+            )
+            
+            
+            
+            # Allow Enter key to submit
+# Allow Enter key to submit
+            question_input
+            question_input.submit
+submit(
+                fn
+                fn=self
+self.process_question
+process_question,
+                inputs
+                inputs=[question_input
+question_input, top_k_slider
+ top_k_slider],
+                outputs
+                outputs=[
+                    answer_output
+                    answer_output,
+                    sources_output
+                    sources_output,
+                    evaluation_output
+                    evaluation_output,
+                    metadata_output
+                    metadata_output
+                
+                ]
+            
+            )
+            
+            
+            
+            # Footer
+# Footer
+            gr
+            gr.Markdown
+Markdown("""
+"""
+            ---
+            ---
+            ### 🔍 Observability
+            ### 🔍 Observability
+            View detailed traces and metrics at: [Future AGI Dashboard](https://app.futureagi.com)
+            View detailed traces and metrics at: [Future AGI Dashboard](https://app.futureagi.com)
+            
+            
+            ### 📖 Features
+            ### 📖 Features
+            - **Google Gemini 2.0 Flash**: FREE, fast, high-quality AI
+            - **Google Gemini 2.0 Flash**: FREE, fast, high-quality AI
+            - **TraceAI**: Automatic tracing for all operations
+            - **TraceAI**: Automatic tracing for all operations
+            - **AI Evaluation**: Automated quality checks (hallucination, relevance, toxicity)
+            - **AI Evaluation**: Automated quality checks (hallucination, relevance, toxicity)
+            - **Vector Search**: Semantic search with ChromaDB
+            - **Vector Search**: Semantic search with ChromaDB
+            - **Cost Tracking**: Know exactly what you're spending (virtually nothing!)
+            - **Cost Tracking**: Know exactly what you're spending (virtually nothing!)
+            """
+            """)
+        
+        
+        
+        return
+return interface
+ interface
+
+
+--- PAGE 27 END ---
+
+File 10: main.py
+def
+def create_interface
+create_interface(rag_engine
+rag_engine: RAGEngine
+ RAGEngine, evaluator
+ evaluator: QualityEvaluator
+ QualityEvaluator) -> gr
+ gr.Blocks
+Blocks:
+    
+    """
+"""
+    Convenience function to create UI
+    Convenience function to create UI
+    
+    
+    Args:
+    Args:
+        rag_engine: RAG engine instance
+        rag_engine: RAG engine instance
+        evaluator: Quality evaluator instance
+        evaluator: Quality evaluator instance
+        
+        
+    Returns:
+    Returns:
+        Gradio interface
+        Gradio interface
+    """
+    """
+    ui 
+    ui = RAGUI
+ RAGUI(rag_engine
+rag_engine, evaluator
+ evaluator)
+    
+    return
+return ui
+ ui.create_interface
+create_interface()
+python
+
+
+--- PAGE 28 END ---
+
+"""
+"""
+Main Application Entry Point
+Main Application Entry Point
+Initializes and runs the Gemini Document Q&A System with Future AGI
+Initializes and runs the Gemini Document Q&A System with Future AGI
+"""
+"""
+import
+import os
+ os
+import
+import sys
+ sys
+from
+from pathlib 
+ pathlib import
+import Path
+ Path
+# Add project root to path
+# Add project root to path
+sys
+sys.path
+path.insert
+insert(0, str
+str(Path
+Path(__file__
+__file__).parent
+parent))
+from
+from config 
+ config import
+import settings
+ settings
+from
+from src 
+ src import
+import (
+    DocumentProcessor
+    DocumentProcessor,
+    VectorStore
+    VectorStore,
+    RAGEngine
+    RAGEngine,
+    QualityEvaluator
+    QualityEvaluator,
+    create_interface
+    create_interface
+)
+def
+def initialize_system
+initialize_system():
+    
+    """Initialize all components of the RAG system"""
+"""Initialize all components of the RAG system"""
+    
+    print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+    
+    print
+print("🚀 Initializing Gemini Document Q&A System"
+"🚀 Initializing Gemini Document Q&A System")
+    
+    print
+print("="
+"=" * 60
+60)
+    
+    
+    
+    # Step 1: Initialize Document Processor
+# Step 1: Initialize Document Processor
+    
+    print
+print("\n📄 Step 1: Initializing Document Processor..."
+"\n📄 Step 1: Initializing Document Processor...")
+    doc_processor 
+    doc_processor = DocumentProcessor
+ DocumentProcessor(
+        chunk_size
+        chunk_size=settings
+settings.chunk_size
+chunk_size,
+        chunk_overlap
+        chunk_overlap=settings
+settings.chunk_overlap
+chunk_overlap
+    
+    )
+    
+    
+    
+    # Step 2: Load and Process Documents
+# Step 2: Load and Process Documents
+    
+    print
+print("\n📂 Step 2: Loading Documents..."
+"\n📂 Step 2: Loading Documents...")
+    chunks 
+    chunks = doc_processor
+ doc_processor.load_documents
+load_documents(settings
+settings.documents_dir
+documents_dir)
+    
+    
+    
+    ifif not
+not chunks
+ chunks:
+        
+        print
+print("\n⚠️  WARNING: No documents found!"
+"\n⚠️  WARNING: No documents found!")
+        
+        print
+print(f"   Please add PDF or TXT files to: 
+f"   Please add PDF or TXT files to: {settings
+settings.documents_dir
+documents_dir}")
+        
+        print
+print(f"   Or run: python add_sample_docs.py"
+f"   Or run: python add_sample_docs.py")
+        
+        print
+print("\n   The system will start, but you won't be able to ask questions."
+"\n   The system will start, but you won't be able to ask questions.")
+
+
+--- PAGE 29 END ---
+
+        
+        input
+input("\nPress Enter to continue anyway..."
+"\nPress Enter to continue anyway...")
+    
+    
+    
+    # Step 3: Initialize Vector Store
+# Step 3: Initialize Vector Store
+    
+    print
+print("\n🗄️  Step 3: Initializing Vector Store..."
+"\n🗄️  Step 3: Initializing Vector Store...")
+    vector_store 
+    vector_store = VectorStore
+ VectorStore(
+        persist_directory
+        persist_directory=settings
+settings.chroma_dir
+chroma_dir,
+        collection_name
+        collection_name=settings
+settings.project_name
+project_name,
+        embedding_model
+        embedding_model=settings
+settings.embedding_model
+embedding_model
+    
+    )
+    
+    
+    
+    # Step 4: Add Documents to Vector Store (if new)
+# Step 4: Add Documents to Vector Store (if new)
+    
+    ifif chunks
+ chunks:
+        existing_count 
+        existing_count = vector_store
+ vector_store.collection
+collection.count
+count()
+        
+        ifif existing_count 
+ existing_count ==
+== 0:
+            
+            print
+print("\n📥 Step 4: Adding documents to vector store..."
+"\n📥 Step 4: Adding documents to vector store...")
+            vector_store
+            vector_store.add_documents
+add_documents(chunks
+chunks)
+        
+        else
+else:
+            
+            print
+print(f"\n✅ Step 4: Using existing vector store (
+f"\n✅ Step 4: Using existing vector store ({existing_count
+existing_count} documents)"
+ documents)")
+            
+            print
+print("   To reindex: Delete the 'chroma_db' folder and restart"
+"   To reindex: Delete the 'chroma_db' folder and restart")
+    
+    
+    
+    # Step 5: Initialize RAG Engine with TraceAI
+# Step 5: Initialize RAG Engine with TraceAI
+    
+    print
+print("\n🤖 Step 5: Initializing RAG Engine..."
+"\n🤖 Step 5: Initializing RAG Engine...")
+    rag_engine 
+    rag_engine = RAGEngine
+ RAGEngine(vector_store
+vector_store)
+    
+    
+    
+    # Step 6: Initialize Quality Evaluator
+# Step 6: Initialize Quality Evaluator
+    
+    print
+print("\n📊 Step 6: Initializing Quality Evaluator..."
+"\n📊 Step 6: Initializing Quality Evaluator...")
+    evaluator 
+    evaluator = QualityEvaluator
+ QualityEvaluator()
+    
+    
+    
+    print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+    
+    print
+print("✅ System Initialization Complete!"
+"✅ System Initialization Complete!")
+    
+    print
+print("="
+"=" * 60
+60)
+    
+    
+    
+    return
+return rag_engine
+ rag_engine, evaluator
+ evaluator
+def
+def print_system_info
+print_system_info():
+    
+    """Print system information and helpful links"""
+"""Print system information and helpful links"""
+    
+    print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+    
+    print
+print("📊 SYSTEM INFORMATION"
+"📊 SYSTEM INFORMATION")
+    
+    print
+print("="
+"=" * 60
+60)
+    
+    print
+print(f"\n📁 Project: 
+f"\n📁 Project: {settings
+settings.project_name
+project_name}")
+    
+    print
+print(f"🌍 Environment: 
+f"🌍 Environment: {settings
+settings.environment
+environment}")
+    
+    print
+print(f"🤖 LLM Model: 
+f"🤖 LLM Model: {settings
+settings.llm_model
+llm_model}")
+    
+    print
+print(f"📏 Chunk Size: 
+f"📏 Chunk Size: {settings
+settings.chunk_size
+chunk_size} tokens"
+ tokens")
+    
+    print
+print(f"🔍 Top-K Retrieval: 
+f"🔍 Top-K Retrieval: {settings
+settings.top_k_retrieval
+top_k_retrieval}")
+
+
+--- PAGE 30 END ---
+
+    
+    print
+print(f"📊 Evaluation: 
+f"📊 Evaluation: {'Enabled'
+'Enabled' ifif settings
+ settings.enable_evaluation 
+enable_evaluation else
+else 'Disabled'
+'Disabled'}")
+    
+    
+    
+    print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+    
+    print
+print("🔗 USEFUL LINKS"
+"🔗 USEFUL LINKS")
+    
+    print
+print("="
+"=" * 60
+60)
+    
+    print
+print("\n🔍 View Traces:"
+"\n🔍 View Traces:")
+    
+    print
+print(f"   https://app.futureagi.com/projects/
+f"   https://app.futureagi.com/projects/{settings
+settings.project_name
+project_name}/traces"
+/traces")
+    
+    print
+print("\n📊 View Evaluations:"
+"\n📊 View Evaluations:")
+    
+    print
+print(f"   https://app.futureagi.com/projects/
+f"   https://app.futureagi.com/projects/{settings
+settings.project_name
+project_name}/evaluations"
+/evaluations")
+    
+    print
+print("\n🔑 Get Gemini API Key:"
+"\n🔑 Get Gemini API Key:")
+    
+    print
+print("   https://aistudio.google.com/app/apikey"
+"   https://aistudio.google.com/app/apikey")
+    
+    print
+print("\n📚 Documentation:"
+"\n📚 Documentation:")
+    
+    print
+print("   https://docs.futureagi.com"
+"   https://docs.futureagi.com")
+    
+    
+    
+    print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+    
+    print
+print("💡 TIPS"
+"💡 TIPS")
+    
+    print
+print("="
+"=" * 60
+60)
+    
+    print
+print("""
+"""
+1. Add documents to: data/documents/
+1. Add documents to: data/documents/
+2. Ask specific questions about your documents
+2. Ask specific questions about your documents
+3. Check evaluation results for answer quality
+3. Check evaluation results for answer quality
+4. View traces in Future AGI dashboard
+4. View traces in Future AGI dashboard
+5. Monitor costs (virtually FREE with Gemini!)
+5. Monitor costs (virtually FREE with Gemini!)
+6. Adjust chunk_size in config.py for better results
+6. Adjust chunk_size in config.py for better results
+"""
+""")
+def
+def main
+main():
+    
+    """Main application entry point"""
+"""Main application entry point"""
+    
+    try
+try:
+        
+        # Initialize system
+# Initialize system
+        rag_engine
+        rag_engine, evaluator 
+ evaluator = initialize_system
+ initialize_system()
+        
+        
+        
+        # Print system info
+# Print system info
+        print_system_info
+        print_system_info()
+        
+        
+        
+        # Create and launch Gradio interface
+# Create and launch Gradio interface
+        
+        print
+print("\n"
+"\n" + "="
+"=" * 60
+60)
+        
+        print
+print("🌐 Starting Web Interface..."
+"🌐 Starting Web Interface...")
+        
+        print
+print("="
+"=" * 60
+60)
+        
+        
+        interface 
+        interface = create_interface
+ create_interface(rag_engine
+rag_engine, evaluator
+ evaluator)
+        
+        
+        
+        print
+print("\n✅ Application is running!"
+"\n✅ Application is running!")
+        
+        print
+print("   Open in browser: http://localhost:7860"
+"   Open in browser: http://localhost:7860")
+
+
+--- PAGE 31 END ---
+
+File 11: add_sample_docs.py
+        
+        print
+print("\n⏸️  Press Ctrl+C to stop\n"
+"\n⏸️  Press Ctrl+C to stop\n")
+        
+        
+        
+        # Launch interface
+# Launch interface
+        interface
+        interface.launch
+launch(
+            server_name
+            server_name="0.0.0.0"
+"0.0.0.0",
+            server_port
+            server_port=7860
+7860,
+            share
+            share=False
+False,
+            show_error
+            show_error=True
+True
+        
+        )
+        
+        
+    
+    except
+except KeyboardInterrupt
+ KeyboardInterrupt:
+        
+        print
+print("\n\n👋 Shutting down gracefully..."
+"\n\n👋 Shutting down gracefully...")
+        
+        print
+print("✅ Application stopped"
+"✅ Application stopped")
+        
+        
+    
+    except
+except Exception 
+ Exception as
+as e e:
+        
+        print
+print(f"\n❌ Fatal Error: 
+f"\n❌ Fatal Error: {str
+str(e)}")
+        
+        print
+print("\nTroubleshooting:"
+"\nTroubleshooting:")
+        
+        print
+print("1. Check .env file has correct API keys"
+"1. Check .env file has correct API keys")
+        
+        print
+print("2. Ensure all dependencies are installed: pip install -r requirements.txt"
+"2. Ensure all dependencies are installed: pip install -r requirements.txt")
+        
+        print
+print("3. Check documents exist in: data/documents/"
+"3. Check documents exist in: data/documents/")
+        
+        print
+print("4. Get FREE Gemini API key: https://aistudio.google.com/app/apikey"
+"4. Get FREE Gemini API key: https://aistudio.google.com/app/apikey")
+        
+        print
+print("\nFor help, see: https://docs.futureagi.com"
+"\nFor help, see: https://docs.futureagi.com")
+        sys
+        sys.exit
+exit(1)
+ifif __name__ 
+ __name__ ==
+== "__main__"
+"__main__":
+    main
+    main()
+python
+
+
+--- PAGE 32 END ---
+
+"""
+"""
+Helper Script to Add Sample Documents
+Helper Script to Add Sample Documents
+Creates sample TXT files for testing the system
+Creates sample TXT files for testing the system
+"""
+"""
+from
+from pathlib 
+ pathlib import
+import Path
+ Path
+def
+def create_sample_documents
+create_sample_documents():
+    
+    """Create sample documents in data/documents/"""
+"""Create sample documents in data/documents/"""
+    
+    
+    documents_dir 
+    documents_dir = Path
+ Path("data/documents"
+"data/documents")
+    documents_dir
+    documents_dir.mkdir
+mkdir(parents
+parents=True
+True, exist_ok
+ exist_ok=True
+True)
+    
+    
+    
+    print
+print("📄 Creating sample documents..."
+"📄 Creating sample documents...")
+    
+    
+    
+    # Sample 1: AI Basics (TXT)
+# Sample 1: AI Basics (TXT)
+    ai_content 
+    ai_content = """
+"""
+Artificial Intelligence (AI) Overview
+Artificial Intelligence (AI) Overview
+What is Artificial Intelligence?
+What is Artificial Intelligence?
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines 
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines 
+that are programmed to think and learn like humans. AI systems can perform tasks that 
+that are programmed to think and learn like humans. AI systems can perform tasks that 
+typically require human intelligence, such as visual perception, speech recognition, 
+typically require human intelligence, such as visual perception, speech recognition, 
+decision-making, and language translation.
+decision-making, and language translation.
+Types of AI:
+Types of AI:
+1. Narrow AI (Weak AI): AI systems designed for specific tasks, such as voice assistants, 
+1. Narrow AI (Weak AI): AI systems designed for specific tasks, such as voice assistants, 
+   recommendation systems, or image recognition.
+   recommendation systems, or image recognition.
+2. General AI (Strong AI): Hypothetical AI systems that possess the ability to understand, 
+2. General AI (Strong AI): Hypothetical AI systems that possess the ability to understand, 
+   learn, and apply intelligence across a wide range of tasks, similar to human intelligence.
+   learn, and apply intelligence across a wide range of tasks, similar to human intelligence.
+3. Superintelligent AI: A theoretical form of AI that surpasses human intelligence in all aspects.
+3. Superintelligent AI: A theoretical form of AI that surpasses human intelligence in all aspects.
+Machine Learning:
+Machine Learning:
+Machine Learning (ML) is a subset of AI that enables systems to learn and improve from 
+Machine Learning (ML) is a subset of AI that enables systems to learn and improve from 
+experience without being explicitly programmed. ML algorithms use statistical techniques 
+experience without being explicitly programmed. ML algorithms use statistical techniques 
+to identify patterns in data and make predictions or decisions.
+to identify patterns in data and make predictions or decisions.
+Common ML algorithms include:
+Common ML algorithms include:
+- Linear Regression
+- Linear Regression
+- Decision Trees
+- Decision Trees
+- Neural Networks
+- Neural Networks
+
+
+--- PAGE 33 END ---
+
+- Support Vector Machines
+- Support Vector Machines
+- Random Forests
+- Random Forests
+Applications of AI:
+Applications of AI:
+- Healthcare: Disease diagnosis, drug discovery, personalized medicine
+- Healthcare: Disease diagnosis, drug discovery, personalized medicine
+- Finance: Fraud detection, algorithmic trading, risk assessment
+- Finance: Fraud detection, algorithmic trading, risk assessment
+- Transportation: Autonomous vehicles, traffic optimization
+- Transportation: Autonomous vehicles, traffic optimization
+- Customer Service: Chatbots, virtual assistants
+- Customer Service: Chatbots, virtual assistants
+- Manufacturing: Predictive maintenance, quality control
+- Manufacturing: Predictive maintenance, quality control
+- Education: Personalized learning, automated grading
+- Education: Personalized learning, automated grading
+Future of AI:
+Future of AI:
+The future of AI holds immense potential. Advancements in deep learning, natural language 
+The future of AI holds immense potential. Advancements in deep learning, natural language 
+processing, and computer vision are enabling more sophisticated AI applications.
+processing, and computer vision are enabling more sophisticated AI applications.
+"""
+"""
+    
+    
+    
+    with
+with open
+open(documents_dir 
+documents_dir / "ai_basics.txt"
+"ai_basics.txt", "w"
+"w") as
+as f f:
+        f
+        f.write
+write(ai_content
+ai_content)
+    
+    print
+print("   ✅ Created: ai_basics.txt"
+"   ✅ Created: ai_basics.txt")
+    
+    
+    
+    # Sample 2: Python Programming (TXT)
+# Sample 2: Python Programming (TXT)
+    python_content 
+    python_content = """
+"""
+Python Programming Language Guide
+Python Programming Language Guide
+Introduction to Python:
+Introduction to Python:
+Python is a high-level, interpreted programming language known for its simplicity, 
+Python is a high-level, interpreted programming language known for its simplicity, 
+readability, and versatility. Created by Guido van Rossum and first released in 1991, 
+readability, and versatility. Created by Guido van Rossum and first released in 1991, 
+Python has become one of the most popular programming languages in the world.
+Python has become one of the most popular programming languages in the world.
+Key Features of Python:
+Key Features of Python:
+1. Easy to Learn: Python's syntax is clean and easy to understand.
+1. Easy to Learn: Python's syntax is clean and easy to understand.
+2. Interpreted Language: Python code is executed line by line.
+2. Interpreted Language: Python code is executed line by line.
+3. Dynamic Typing: Variable types are determined at runtime.
+3. Dynamic Typing: Variable types are determined at runtime.
+4. Extensive Libraries: Vast ecosystem of libraries and frameworks.
+4. Extensive Libraries: Vast ecosystem of libraries and frameworks.
+5. Cross-Platform: Runs on Windows, macOS, Linux.
+5. Cross-Platform: Runs on Windows, macOS, Linux.
+Popular Python Libraries:
+Popular Python Libraries:
+- NumPy: Numerical computing and array operations
+- NumPy: Numerical computing and array operations
+- Pandas: Data manipulation and analysis
+- Pandas: Data manipulation and analysis
+- Matplotlib: Data visualization and plotting
+- Matplotlib: Data visualization and plotting
+- Scikit-learn: Machine learning algorithms
+- Scikit-learn: Machine learning algorithms
+- TensorFlow/PyTorch: Deep learning frameworks
+- TensorFlow/PyTorch: Deep learning frameworks
+- Django/Flask: Web development frameworks
+- Django/Flask: Web development frameworks
+Common Use Cases:
+Common Use Cases:
+
+
+--- PAGE 34 END ---
+
+1. Data Science and Analytics
+1. Data Science and Analytics
+2. Web Development
+2. Web Development
+3. Machine Learning and AI
+3. Machine Learning and AI
+4. Automation and Scripting
+4. Automation and Scripting
+5. Scientific Computing
+5. Scientific Computing
+Python continues to evolve with regular updates, making it a future-proof choice.
+Python continues to evolve with regular updates, making it a future-proof choice.
+"""
+"""
+    
+    
+    
+    with
+with open
+open(documents_dir 
+documents_dir / "python_guide.txt"
+"python_guide.txt", "w"
+"w") as
+as f f:
+        f
+        f.write
+write(python_content
+python_content)
+    
+    print
+print("   ✅ Created: python_guide.txt"
+"   ✅ Created: python_guide.txt")
+    
+    
+    
+    # Sample 3: RAG Systems (TXT)
+# Sample 3: RAG Systems (TXT)
+    rag_content 
+    rag_content = """
+"""
+Retrieval-Augmented Generation (RAG) Systems
+Retrieval-Augmented Generation (RAG) Systems
+What is RAG?
+What is RAG?
+Retrieval-Augmented Generation (RAG) is a technique that combines information retrieval 
+Retrieval-Augmented Generation (RAG) is a technique that combines information retrieval 
+with large language model generation to produce more accurate, grounded, and contextually 
+with large language model generation to produce more accurate, grounded, and contextually 
+relevant responses.
+relevant responses.
+How RAG Works:
+How RAG Works:
+1. Document Ingestion: Load and process documents
+1. Document Ingestion: Load and process documents
+2. Query Processing: Convert user query to embedding
+2. Query Processing: Convert user query to embedding
+3. Retrieval: Search for semantically similar documents
+3. Retrieval: Search for semantically similar documents
+4. Context Formation: Combine retrieved documents
+4. Context Formation: Combine retrieved documents
+5. Generation: LLM generates answer based on context
+5. Generation: LLM generates answer based on context
+6. Response: Return answer with source citations
+6. Response: Return answer with source citations
+Benefits of RAG:
+Benefits of RAG:
+- Reduces hallucinations by grounding responses in source documents
+- Reduces hallucinations by grounding responses in source documents
+- Enables LLMs to access up-to-date information
+- Enables LLMs to access up-to-date information
+- Provides source attribution and citations
+- Provides source attribution and citations
+- More cost-effective than fine-tuning
+- More cost-effective than fine-tuning
+Best Practices:
+Best Practices:
+1. Optimize chunk size for your use case
+1. Optimize chunk size for your use case
+2. Use chunk overlap to preserve context
+2. Use chunk overlap to preserve context
+3. Implement evaluation and monitoring
+3. Implement evaluation and monitoring
+4. Add metadata for better filtering
+4. Add metadata for better filtering
+5. Monitor for hallucinations
+5. Monitor for hallucinations
+"""
+"""
+    
+    
+    
+    with
+with open
+open(documents_dir 
+documents_dir / "rag_systems.txt"
+"rag_systems.txt", "w"
+"w") as
+as f f:
+
+
+--- PAGE 35 END ---
+
+File 12: .gitignore
+        f
+        f.write
+write(rag_content
+rag_content)
+    
+    print
+print("   ✅ Created: rag_systems.txt"
+"   ✅ Created: rag_systems.txt")
+    
+    
+    
+    print
+print("\n✅ Sample documents created successfully!"
+"\n✅ Sample documents created successfully!")
+    
+    print
+print(f"   Location: 
+f"   Location: {documents_dir
+documents_dir.absolute
+absolute()}")
+    
+    print
+print("\nYou can now run: python main.py"
+"\nYou can now run: python main.py")
+ifif __name__ 
+ __name__ ==
+== "__main__"
+"__main__":
+    create_sample_documents
+    create_sample_documents()
+# Python
+# Python
+__pycache__/
+__pycache__/
+*.py[cod]
+*.py[cod]
+*$py.class
+*$py.class
+*.so
+*.so
+.Python
+.Python
+env/
+env/
+venv/
+venv/
+ENV/
+ENV/
+build/
+build/
+# Environment Variables
+# Environment Variables
+.env
+.env
+.env.local
+.env.local
+# IDEs
+# IDEs
+.vscode/
+.vscode/
+.idea/
+.idea/
+*.swp
+*.swp
+.DS_Store
+.DS_Store
+# ChromaDB
+# ChromaDB
+chroma_db/
+chroma_db/
+*.db
+*.db
+*.sqlite3
+*.sqlite3
+# Logs
+# Logs
+*.log
+*.log
+logs/
+logs/
+
+
+--- PAGE 36 END ---
+
+File 13: README.md
+# Testing
+# Testing
+.pytest_cache/
+.pytest_cache/
+.coverage
+.coverage
+# Gradio
+# Gradio
+flagged/
+flagged/
+markdown
+
+
+--- PAGE 37 END ---
+
+# Gemini Document Q&A System with Future AGI
+ Gemini Document Q&A System with Future AGI
+AI-Powered document question-answering using Google Gemini 2.0 Flash with automatic observability and evaluation.
+AI-Powered document question-answering using Google Gemini 2.0 Flash with automatic observability and evaluation.
+##
+## Features
+ Features
+✅ 
+✅ **
+**FREE Google Gemini 2.0 Flash
+FREE Google Gemini 2.0 Flash**
+** - Fast, high-quality, generous free tier
+ - Fast, high-quality, generous free tier
+✅ 
+✅ **
+**Automatic Observability
+Automatic Observability**
+** - TraceAI for complete tracing
+ - TraceAI for complete tracing
+✅ 
+✅ **
+**Quality Evaluation
+Quality Evaluation**
+** - Automated checks for hallucination, relevance, toxicity
+ - Automated checks for hallucination, relevance, toxicity
+✅ 
+✅ **
+**Document Processing
+Document Processing**
+** - PDF/TXT ingestion with chunking
+ - PDF/TXT ingestion with chunking
+✅ 
+✅ **
+**Vector Search
+Vector Search**
+** - ChromaDB for semantic search
+ - ChromaDB for semantic search
+✅ 
+✅ **
+**Web Interface
+Web Interface**
+** - Gradio UI for easy interaction
+ - Gradio UI for easy interaction
+✅ 
+✅ **
+**Cost Tracking
+Cost Tracking**
+** - Know exactly what you're spending (virtually nothing!)
+ - Know exactly what you're spending (virtually nothing!)
+##
+## Quick Start
+ Quick Start
+###
+### 1. Install Dependencies
+ 1. Install Dependencies
+```
+```bash
+bash
+pip 
+pip install
+install -r requirements.txt
+ -r requirements.txt
+```
+```
+###
+### 2. Get API Keys
+ 2. Get API Keys
+**
+**Google Gemini (FREE):
+Google Gemini (FREE):**
+**
+- Go to: https://aistudio.google.com/app/apikey
+ Go to: https://aistudio.google.com/app/apikey
+- Click "Create API key"
+ Click "Create API key"
+- Copy your key
+ Copy your key
+**
+**Future AGI:
+Future AGI:**
+**
+- Go to: https://app.futureagi.com/settings/api-keys
+ Go to: https://app.futureagi.com/settings/api-keys
+- Copy your API key and Secret key
+ Copy your API key and Secret key
+###
+### 3. Configure Environment
+ 3. Configure Environment
+```
+```bash
+bash
+cp
+cp .env.example .env
+ .env.example .env
+# Edit .env and add your API keys
+# Edit .env and add your API keys
+```
+```
+###
+### 4. Add Documents
+ 4. Add Documents
+```
+```bash
+bash
+# Add sample documents
+# Add sample documents
+python add_sample_docs.py
+python add_sample_docs.py
+# Or add your own PDF/TXT files to data/documents/
+# Or add your own PDF/TXT files to data/documents/
+
+
+--- PAGE 38 END ---
+
+Installation Instructions
+Step 1: Create Project Directory
+```
+```
+###
+### 5. Run!
+ 5. Run!
+```
+```bash
+bash
+python main.py
+python main.py
+```
+```
+Open http://localhost:7860 in your browser!
+Open http://localhost:7860 in your browser!
+##
+## View Traces
+ View Traces
+Go to https://app.futureagi.com to see:
+Go to https://app.futureagi.com to see:
+- Complete request traces
+ Complete request traces
+- Token usage
+ Token usage
+- Cost tracking
+ Cost tracking
+- Evaluation results
+ Evaluation results
+- Performance metrics
+ Performance metrics
+##
+## Cost
+ Cost
+**
+**Google Gemini 2.0 Flash FREE Tier:
+Google Gemini 2.0 Flash FREE Tier:**
+**
+- 15 requests per minute
+ 15 requests per minute
+- 1 million tokens per minute
+ 1 million tokens per minute
+- 1,500 requests per day
+ 1,500 requests per day
+For most personal use, you'll stay within the free tier!
+For most personal use, you'll stay within the free tier!
+##
+## Support
+ Support
+- Google Gemini Docs: https://ai.google.dev/docs
+ Google Gemini Docs: https://ai.google.dev/docs
+- Future AGI Docs: https://docs.futureagi.com
+ Future AGI Docs: https://docs.futureagi.com
+- Issues: Open a GitHub issue
+ Issues: Open a GitHub issue
+bash
+mkdir
+mkdir gemini-rag-project
+ gemini-rag-project
+cd
+cd gemini-rag-project
+ gemini-rag-project
+
+
+--- PAGE 39 END ---
+
+Step 2: Create Files
+Copy each file section above into its respective file:
+Create requirements.txt
+Create .env.example
+Create config.py
+Create src/  directory
+Create all files in src/
+Create main.py
+Create add_sample_docs.py
+Create .gitignore
+Create README.md
+Step 3: Setup Virtual Environment
+Step 4: Install Dependencies
+Step 5: Configure
+Step 6: Add Sample Documents
+bash
+python -m venv venv
+python -m venv venv
+source
+source venv/bin/activate  
+ venv/bin/activate  # On Windows: venv\Scripts\activate
+# On Windows: venv\Scripts\activate
+bash
+pip 
+pip install
+install -r requirements.txt
+ -r requirements.txt
+bash
+cp
+cp .env.example .env
+ .env.example .env
+# Edit .env with your API keys
+# Edit .env with your API keys
+bash
+python add_sample_docs.py
+python add_sample_docs.py
+
+
+--- PAGE 40 END ---
+
+Step 7: Run!
+That's It!
+You now have all the code files needed to run the Gemini RAG project with Future AGI! 🚀
+bash
+python main.py
+python main.py
+
+
+--- PAGE 41 END ---
+
