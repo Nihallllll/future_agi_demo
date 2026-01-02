@@ -1,0 +1,15 @@
+[
+  {
+    "operation": "quantum_explanation",
+    "timestamp": "2026-01-02T11:34:12.523263",
+    "start_time": 1767333852.5232637,
+    "end_time": 1767333856.9459374,
+    "latency_ms": 4422.67370223999,
+    "input_tokens": 7,
+    "output_tokens": 13,
+    "total_tokens": 20,
+    "estimated_cost_usd": 4.425e-06,
+    "status": "success",
+    "response_preview": "Quantum computing harnesses quantum mechanics to perform calculations intractable for classical comp"
+  }
+]
